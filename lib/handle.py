@@ -1,8 +1,8 @@
 import sys
 
 #from parser import ARGS
-from parser import _ARGS, _CMD
-from parser import die as DIE
+from myparser import _ARGS, _CMD
+from myparser import die as DIE
 from constants import *
 import doc
 import user

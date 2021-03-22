@@ -2,7 +2,7 @@
 
 import engine as II
 import handle as HH
-from parser import die as DIE
+from myparser import die as DIE
 
 def user_list():
     args = HH.args()
@@ -19,7 +19,7 @@ def user_build():
 def user_find():
     args = HH.args('name')
     for hit in II.find(args.name):
-        print(hit)
+        print(hit.root())
 
 def user_unique():
     args = HH.args('name')

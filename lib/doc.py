@@ -2,8 +2,8 @@
 
 from constants import *
 import templates
-from parser import ARGS
-from parser import die as DIE
+from myparser import ARGS
+from myparser import die as DIE
 
 
 _fixline = lambda line : PADDING + line.strip()
