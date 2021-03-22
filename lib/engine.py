@@ -2,6 +2,7 @@
 import functools
 from pathlib import Path
 from constants import INDEX, HOME
+import itertools
 
 def _memoize(func):
     #https://medium.com/@nkhaja/memoization-and-decorators-with-python-32f607439f84
@@ -13,7 +14,6 @@ def _memoize(func):
             cache[key] = func(*args, **kwargs)
         return cache[key]
     return memoized_func
-
 
 def find(name):
     return indexDict().get(name,[])
@@ -38,14 +38,37 @@ def indexDict () :
         acc[name].append(named)
     return acc
 
+def _glob(path):
+    try: return path.glob('*')
+    except PermissionError: return []
+def _isdir(path):
+    try: return path.is_dir()
+    except PermissionError: return False
+def _walk( root, depth=0 ):
+    self=_walk
+    if depth < 0:
+        return
+    for path in _glob(root):
+        yield path
+        if _isdir(path):
+            for path in self(path, depth-1):
+                yield path
+
+def candidates ():
+    return itertools.chain(
+        _walk(Path('/Volumes'), 3)
+        , _walk(Path('/media'  ), 3)
+        , _walk(Path('/mount'  ), 3)
+        , _walk(Path('/mnt'    ), 3)
+        , _walk(HOME , 5)
+    )
+
 def build ():
     with open(INDEX, 'w') as fd:
-        for path in Path(HOME).glob('**'):
+        for path in candidates():
             if path.name == '.named':
                 print(path)
                 fd.write(str(path) + '\n')
-    print('---')
-    print( INDEX.read_text() )
 
 class Named :
     def __init__( self, path ):
