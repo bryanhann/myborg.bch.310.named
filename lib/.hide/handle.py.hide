@@ -1,0 +1,19 @@
+import sys
+
+from myparser import ARGS
+from myparser import die as DIE
+from constants import *
+import user
+
+
+def main():
+    if ARGS.build:
+        user.user_build()
+        #cmdDict['build']()
+    if ARGS.list: 
+        user.user_list()
+        #cmdDict['list']() 
+    elif ARGS.find:
+        user.user_find(ARGS.find)
+        #cmdDict['find'](ARGS.find)
+

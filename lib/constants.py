@@ -6,7 +6,5 @@ from pathlib import Path
 
 PROG=Path(sys.argv[0]).name
 HOME=Path(os.environ['HOME'])
-INDEX=HOME/'.cache/named/index'
-NEWLINE='\n'
-PADDING=' '*8
+INDEX=HOME/('.cache/%s-index' % PROG)
 

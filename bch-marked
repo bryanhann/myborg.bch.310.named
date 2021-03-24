@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent/'lib'))
+
+from constants import *
+import engine
+
+try:
+    ARGS
+except NameError:
+    parser=argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-v", "--verbose", action="store_true")
+    group.add_argument("-q", "--quiet", action="store_true")
+
+    parser.add_argument('-b', '--build',  help="rebuild the index before all", action="store_true" )
+    parser.add_argument('-l', '--list',   help="list all named dirs.", action="store_true")
+    parser.add_argument('-m', '--mark',   help="limit -l to dirs with mark MARK", type=str )
+    parser.add_argument('-n', '--name',   help="limit -l to dirs with name NAME", type=str )
+    parser.add_argument('-u', '--unique', help="require -l returns a unique result.", action="store_true")
+
+    ARGS = parser.parse_args()
+
+def main():
+    if ARGS.build:
+        engine.build()
+
+    if ARGS.list: 
+        paths = list(engine.list())
+        if ARGS.mark:
+            paths = [p for p in paths if engine._ms(p) == ARGS.mark ]
+        if ARGS.name:
+            paths = [p for p in paths if p.name == ARGS.name ]
+        if ARGS.unique:
+            if len(paths) < 0: exit( "uniqueness error: no hits" )
+            if len(paths) > 0: exit( "uniqueness error: too many hits" )
+            print(paths[0])
+            exit()
+        for p  in paths:
+            print(engine._ms(p), p)
+    else:
+        print( "try '%s -h'" % PROG )
+    #elif ARGS.name:
+    #    for named in engine.list():
+    #        if named.name() == ARGS.name:
+    #            print(named.root())
+        #hits=engine.find(ARGS.name)
+        #for hit in hits:
+        #    print(hit.root())
+
+
+
+#def user_list():
+#    for named in engine.list():
+#        print(named)
+
+#def user_build():
+#    """Rebuild an index.
+#
+#    This can take a whild
+#    """
+#    engine.build()
+
+#def user_find(name):
+#    hits=engine.find(name)
+#    for hit in hits:
+#        print(hit.root())
+
+
+if __name__ == '__main__':
+    main()

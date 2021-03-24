@@ -4,39 +4,12 @@ from pathlib import Path
 from constants import INDEX, HOME
 import itertools
 
-def _memoize(func):
-    #https://medium.com/@nkhaja/memoization-and-decorators-with-python-32f607439f84
-    cache = func.cache = {}
-    @functools.wraps(func)
-    def memoized_func(*args, **kwargs):
-        key = str(args) + str(kwargs)
-        if key not in cache:
-            cache[key] = func(*args, **kwargs)
-        return cache[key]
-    return memoized_func
-
-def find(name):
-    return indexDict().get(name,[])
-
 
 def list():
-    for key,vals in sorted(indexDict().items()):
-        for named in vals:
-            yield named
-
-@_memoize
-def indexDict () :
     with open(INDEX) as fd:
-        lines = fd.readlines()
-    lines = [line.strip() for line in lines]
-    acc = {}
-    for line in lines:
-        named = Named(line)
-        name = named.name()
-        if not name in acc:
-            acc[name] = []
-        acc[name].append(named)
-    return acc
+        for line in fd.readlines():
+            yield Path(line.strip()).parent
+            #yield MarkedDir(line.strip())
 
 def _glob(path):
     try: return path.glob('*')
@@ -44,11 +17,35 @@ def _glob(path):
 def _isdir(path):
     try: return path.is_dir()
     except PermissionError: return False
-def _walk( root, depth=0 ):
+
+def lines4block(block):
+    lines = block.split('\n')
+    lines = [ xx.strip() for xx in lines ]
+    lines = [ xx for xx in lines if xx ]
+    return lines
+
+
+WALK_EXCLUDE= lines4block("""
+
+    Volumes/Macintosh HD
+
+"""
+)
+print(WALK_EXCLUDE)
+
+def _walk( ot, depth=0 ):
     self=_walk
+    if str(root) in WALK_EXCLUDE:
+        return
     if depth < 0:
         return
+    yield(path)
+    for i
+    if _isdir(path):
+        for path in _glob(root):
+
     for path in _glob(root):
+            continue
         yield path
         if _isdir(path):
             for path in self(path, depth-1):
@@ -62,27 +59,41 @@ def candidates ():
         , _walk(Path('/mnt'    ), 3)
         , _walk(HOME , 5)
     )
+MARKDIR_NAME='.named'
+MARKFILE_NAME='name.txt'
+
+
+
+def _md  (p): return p/MARKDIR_NAME
+def _mf  (p): return p/MARKDIR_NAME/MARKFILE_NAME
+def _ms  (p): return ( _mf(p).is_file() and _mf(p).read_text().strip() ) or  "nomark"
 
 def build ():
     with open(INDEX, 'w') as fd:
         for path in candidates():
-            if path.name == '.named':
-                print(path)
-                fd.write(str(path) + '\n')
+            try:
+                md = _md(path)
+                if md.is_dir():
+                    print(path)
+                    fd.write(str(md) + '\n')
+            except PermissionError:
+                pass
 
-class Named :
+
+class MarkedDir :
     def __init__( self, path ):
-        self._named = Path(path)
+        self._markd = Path(path)
+        self._root = self._markd.parent
     def __repr__( self ):
-        return '%s : %s' % (self.name(), self.root())
+        return '%s : %s' % (self.mark(), self.root())
     def root(self):
-        return self.named().parent
-    def named(self):
-        return self._named
-    def name(self):
-        namefile = self.named()/'name.txt'
-        if namefile.exists():
-            return namefile.read_text().strip()
+        return self._root
+    def markd(self):
+        return self._markd
+    def mark(self):
+        markfile = self.markd()/'name.txt'
+        if markfile.exists():
+            return markfile.read_text().strip()
         else:
-            return 'anon'
+            return "nomark"
 
